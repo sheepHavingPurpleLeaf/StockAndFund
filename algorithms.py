@@ -47,7 +47,6 @@ def sharp_ratio(net_values):
 
     """
     annual_no_risk_return = 0.03
-    monthly_no_risk_return = (1 + annual_no_risk_return) ** (1.0 / 52) - 1
     daily_no_risk_return = (1 + annual_no_risk_return) ** (1.0 / 365) - 1
     return_rates = calculate_return_rate(net_values)
     return_rates_mean = np.mean(return_rates)

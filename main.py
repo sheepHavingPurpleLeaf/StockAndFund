@@ -36,7 +36,7 @@ def main():
 
     args = parser.parse_args()
     if args.load_data != "20200704":
-        build_dataset.Fund(365, True)
+        build_dataset.Fund(365)
     with open(args.load_data + ".pkl", 'rb') as pkl:
         data = pickle.load(pkl)
     print("we have {} active funds in data".format(len(data)))
