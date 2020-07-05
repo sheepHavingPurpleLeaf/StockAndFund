@@ -19,7 +19,7 @@ def calculate_return_rate(net_values):
     """
     return_rate = []
     for i in range(len(net_values) - 1):
-        return_rate.append((net_values[i] - net_values[i + 1]) / net_values[i + 1])
+        return_rate.append((net_values[i] - net_values[i + 1]) / net_values[i])
     return return_rate
 
 
