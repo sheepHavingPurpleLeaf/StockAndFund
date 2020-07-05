@@ -19,7 +19,7 @@ def calculate_return_rate(net_values):
     """
     return_rate = []
     for i in range(len(net_values) - 1):
-        return_rate.append((net_values[i] - net_values[i + 1]) / net_values[i + 1])
+        return_rate.append((net_values[i] - net_values[i + 1]) / net_values[i])
     return return_rate
 
 
@@ -53,6 +53,6 @@ def sharp_ratio(net_values):
     return_rates_std = np.std(return_rates)
 
     daily_sharp_ratio = (return_rates_mean - daily_no_risk_return) / return_rates_std
-    annual_sharp_ratio = daily_sharp_ratio * math.sqrt(252)
+    annual_sharp_ratio = daily_sharp_ratio * math.sqrt(len(net_values))
 
     return daily_sharp_ratio, annual_sharp_ratio
