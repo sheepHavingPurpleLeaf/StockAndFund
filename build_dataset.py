@@ -48,13 +48,13 @@ class Fund:
 
     def get_net_values(self, code):
         """
-        get net value of requested fund
+        get adjusted net value of requested fund
 
         Args:
             code: fund code
 
         Returns:
-            the net values of this fund as a list
+            the adjusted net values of this fund as a list
         """
         self.request_net_value_times += 1
         if self.request_net_value_times % 100 == 0:
@@ -64,8 +64,8 @@ class Fund:
         unit_nav = []
         df = self.tushare.fund_nav(ts_code=code)
         on_market_time = len(df.values)
-        if on_market_time > self.on_market_time and self.check_is_valid_fund(df['unit_nav'].tolist()):
-            return df['unit_nav'].tolist()
+        if on_market_time > self.on_market_time and self.check_is_valid_fund(df['adj_nav'].tolist()):
+            return df['adj_nav'].tolist()
         else:
             return unit_nav
 
