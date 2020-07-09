@@ -32,11 +32,12 @@ class Fund:
         df = self.tushare.fund_basic(status='L')
         print("found {} active funds".format(len(df)))
         for code in tqdm(df['ts_code'].tolist()):
-            net_value = self.get_net_values(code)
-            if len(net_value) != 0:
+            net_value, net_value_date = self.get_net_values(code)
+            if net_value is not None:
                 index = df.index[df['ts_code'] == code]
                 self.fund_info[code] = {}
                 self.fund_info[code]['net_value'] = net_value
+                self.fund_info[code]['net_value_date'] = net_value_date
                 self.fund_info[code]['fund_type'] = df['fund_type'][index].tolist()[0]
                 self.fund_info[code]['management'] = df['management'][index].tolist()[0]
                 self.fund_info[code]['m_fee'] = df['m_fee'][index].tolist()[0]
@@ -54,20 +55,19 @@ class Fund:
             code: fund code
 
         Returns:
-            the adjusted net values of this fund as a list
+            the adjusted net values with dates of this fund as 2 list
         """
         self.request_net_value_times += 1
         if self.request_net_value_times % 100 == 0:
             print("wait for 10s")
             time.sleep(10)
 
-        unit_nav = []
         df = self.tushare.fund_nav(ts_code=code)
         on_market_time = len(df.values)
         if on_market_time > self.on_market_time and self.check_is_valid_fund(df['adj_nav'].tolist()):
-            return df['adj_nav'].tolist()
+            return df['adj_nav'].tolist(), df['end_date'].tolist()
         else:
-            return unit_nav
+            return None, None
 
     @staticmethod
     def check_is_valid_fund(net_values):

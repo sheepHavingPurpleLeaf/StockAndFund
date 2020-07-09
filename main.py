@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # @Time    : 01/07/2020 20:29
 # @Author  : Ziye Yang
-# @Purpose : 
 
 import algorithms
 import argparse
@@ -19,7 +18,8 @@ def build_result_dataframe(data, fund_type):
     for code in data.keys():
         if data[code]['fund_type'] == fund_type:
             adj_nav = data[code]['net_value']
-            net_values = algorithms.effective_net_values(adj_nav)
+            dates = data[code]['net_value_date']
+            net_values, dates = algorithms.effective_net_values(adj_nav, dates, code)
             if len(net_values) >= 252:
                 max_draw_down.append(algorithms.max_draw_down(net_values, len(net_values)))
                 annual_return_rate = algorithms.annual_return(net_values)
@@ -30,16 +30,16 @@ def build_result_dataframe(data, fund_type):
     data_dict = {"code": codes, "max_draw_down": max_draw_down, "annual_return_rates": annual_return_rates,
                  "annual_sharp_ratios": annual_sharp_ratios}
     df = pd.DataFrame(data=data_dict, columns=data_dict.keys())
-    #df = df.sort_values(by='annual_sharp_ratios', ascending=False)
+    df = df.sort_values(by='annual_sharp_ratios', ascending=False)
     return df
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--load_data', default='20200704')
+    parser.add_argument('--load_data', default='20200707')
 
     args = parser.parse_args()
-    if args.load_data != "20200704":
+    if args.load_data != "20200707":
         build_dataset.Fund(365)
     with open(args.load_data + ".pkl", 'rb') as pkl:
         data = pickle.load(pkl)
@@ -48,7 +48,7 @@ def main():
     type_list = ["股票型", "混合型", "债券型", "货币市场型"]
     for fund_type in type_list:
         df = build_result_dataframe(data, fund_type)
-        pd.set_option('display.max_columns',None)
+        pd.set_option('display.max_columns', None)
         print(fund_type + '\n', df.head())
 
 

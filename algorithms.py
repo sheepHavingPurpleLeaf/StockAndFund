@@ -6,26 +6,46 @@
 
 import numpy as np
 import math
+import utils
 
 
-def effective_net_values(net_values):
+def effective_net_values(net_values, dates, code):
     """
     Args:
         net_values: net values of fund as a list
+        dates: date of each net value
+        code: code of fund
 
-    return: effective net values of fund as a list
+    return: effective net values and dates of fund as 2 list
     """
     # sort by date
     net_values.reverse()
-    effective_net_values_list = []
-    effective_signal = 0
+    dates.reverse()
+    effective_values = []
+    effective_dates = []
     # Filter effective net values
     for i in range(len(net_values)):
         if net_values[i] != 1:
-            effective_signal += 1
-        if effective_signal != 0:
-            effective_net_values_list.append(net_values[i])
-    return effective_net_values_list
+            effective_values.extend(net_values[i:])
+            effective_dates.extend(dates[i:])
+            break
+    if not utils.is_date_ascending(effective_dates):
+        print("{} dates is not ascending".format(code))
+        return [], []
+    if utils.has_duplicates(effective_dates):
+        if not utils.is_duplicates_identical(effective_dates, effective_values):
+            print("{} is deleted because it contains same dates with different net values".format(code))
+            return [], []
+        else:
+            effective_dates, effective_values = utils.remove_duplicates(effective_dates, effective_values)
+    length = len(effective_values)
+    for i in range(1, length - 1):
+        if effective_values[i] / effective_values[i + 1] < 0.5:
+            print("{} on {} changed {}: {}".format(code, [effective_dates[i], effective_dates[i + 1]],
+                                                   1 - effective_values[i] / effective_values[i + 1],
+                                                   [effective_values[i], effective_values[i + 1]]))
+            return [], []
+    return effective_values, effective_dates
 
 
 def calculate_return_rate(net_values):
@@ -38,7 +58,7 @@ def calculate_return_rate(net_values):
 
     """
     return_rate = []
-    for i in range(1, len(net_values)-1):
+    for i in range(1, len(net_values) - 1):
         return_rate.append((net_values[i] - net_values[i - 1]) / net_values[i - 1])
 
     return return_rate
