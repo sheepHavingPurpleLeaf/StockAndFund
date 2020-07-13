@@ -106,3 +106,11 @@ def sharp_ratio(net_values):
     annual_return_rates_std = np.std(return_rates) * math.sqrt(252)
     annual_sharp_ratio = (annual_return_rate - annual_no_risk_return) / annual_return_rates_std
     return annual_sharp_ratio
+
+
+def normalization(lst):
+    """
+    Return the Standardization of input list
+
+    """
+    return (lst - np.mean(lst)) / np.std(lst)
