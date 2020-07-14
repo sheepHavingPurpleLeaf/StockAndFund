@@ -40,7 +40,8 @@ def effective_net_values(net_values, dates, code):
             effective_dates, effective_values = utils.remove_duplicates(effective_dates, effective_values)
     length = len(effective_values)
     for i in range(1, length - 1):
-        if effective_values[i] / effective_values[i + 1] < 0.5:
+        ratio = effective_values[i] / effective_values[i + 1]
+        if ratio < 0.5 or ratio > 2:
             print("{} on {} changed {}: {}".format(code, [effective_dates[i], effective_dates[i + 1]],
                                                    1 - effective_values[i] / effective_values[i + 1],
                                                    [effective_values[i], effective_values[i + 1]]))

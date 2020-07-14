@@ -86,3 +86,19 @@ def remove_duplicates(dates, net_values):
                 net_values_unique.append(net_values[i])
                 date_dict[dates[i]] = 1
     return dates_unique, net_values_unique
+
+
+def extract_dict_from_dataframe(df, column_as_key, column_as_value):
+    """
+
+    Args:
+        df: input data frame
+        column_as_key: column of data frame to be dictionary keys
+        column_as_value: column of data frame to be dictionary values
+
+    Returns: extracted dictionary
+
+    """
+    keys = df[column_as_key].values.tolist()
+    values = df[column_as_value].values.tolist()
+    return dict(zip(keys, values))
