@@ -4,10 +4,14 @@
 # @Author  : Ziye Yang
 # @Purpose : To select best fund base on TuShare's dataset
 
-import tushare as ts
+import logging
 import pickle
 import time
+
+import tushare as ts
 from tqdm import tqdm
+
+logger = logging.getLogger(__name__)
 
 
 class Fund:
@@ -22,7 +26,6 @@ class Fund:
         self.fund_info = {}
         self.request_net_value_times = 0
         self.get_active_funds()
-        print(self.fund_info, len(self.fund_info))
 
     def get_active_funds(self):
         """
@@ -30,7 +33,7 @@ class Fund:
 
         """
         df = self.tushare.fund_basic(status='L')
-        print("found {} active funds".format(len(df)))
+        logger.info("found {} active funds".format(len(df)))
         for code in tqdm(df['ts_code'].tolist()):
             net_value, net_value_date = self.get_net_values(code)
             if net_value is not None:

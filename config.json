@@ -1,0 +1,6 @@
+{
+  "p_threshold" : 0.05,
+  "alpha_confidence" : 0.9,
+  "alpha_threshold" : 0.1,
+  "calculate_alpha_until" : "20200115"
+}

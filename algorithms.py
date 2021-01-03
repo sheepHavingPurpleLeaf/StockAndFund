@@ -7,6 +7,9 @@
 import numpy as np
 import math
 import utils
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def effective_net_values(net_values, dates, code):
@@ -30,11 +33,11 @@ def effective_net_values(net_values, dates, code):
             effective_dates.extend(dates[i:])
             break
     if not utils.is_date_ascending(effective_dates):
-        print("{} dates is not ascending".format(code))
+        logger.info("{} dates is not ascending".format(code))
         return [], []
     if utils.has_duplicates(effective_dates):
         if not utils.is_duplicates_identical(effective_dates, effective_values):
-            print("{} is deleted because it contains same dates with different net values".format(code))
+            logger.info("{} is deleted because it contains same dates with different net values".format(code))
             return [], []
         else:
             effective_dates, effective_values = utils.remove_duplicates(effective_dates, effective_values)
@@ -42,7 +45,7 @@ def effective_net_values(net_values, dates, code):
     for i in range(1, length - 1):
         ratio = effective_values[i] / effective_values[i + 1]
         if ratio < 0.5 or ratio > 2:
-            print("{} on {} changed {}: {}".format(code, [effective_dates[i], effective_dates[i + 1]],
+            logger.info("{} on {} changed {}: {}".format(code, [effective_dates[i], effective_dates[i + 1]],
                                                    1 - effective_values[i] / effective_values[i + 1],
                                                    [effective_values[i], effective_values[i + 1]]))
             return [], []

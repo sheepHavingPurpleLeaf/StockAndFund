@@ -102,3 +102,33 @@ def extract_dict_from_dataframe(df, column_as_key, column_as_value):
     keys = df[column_as_key].values.tolist()
     values = df[column_as_value].values.tolist()
     return dict(zip(keys, values))
+
+
+def find_common_in_lists(*args, range1, range2):
+    """
+
+    Args:
+        *args: input lists, at least 2
+        range: top how many?
+
+    Returns: elements in common in a list
+
+    """
+    ans = []
+    flag = 0
+    for i in args[0][:range1]:
+        for j in args[1:]:
+            if i not in j[:range2]:
+                flag = 1
+                break
+        if not flag:
+            ans.append(i)
+        flag = 0
+    return ans
+
+
+if __name__ == '__main__':
+    l1 = [1,2,3,4,5]
+    l2 = [2,3,4,7,8,9]
+    l3 = [2]
+    print(find_common_in_lists(l1,range=5))
