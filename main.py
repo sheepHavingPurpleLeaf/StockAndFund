@@ -16,7 +16,7 @@ import json
 
 logging.basicConfig(filename="log.txt",
                     filemode='w',
-                    format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+                    format='%(asctime)s, %(name)s %(levelname)s %(message)s',
                     datefmt='%H:%M:%S',
                     level=logging.DEBUG)
 
@@ -71,7 +71,7 @@ def build_result_dataframe(data, fund_type, filter_bad_fund=True):
 def train_validate(data, codes, built_dataframe):
     alpha_of_funds = calculate_alpha(data, codes)
     sort_by_sharp = built_dataframe.sort_values("annual_sharp_ratios", ascending=False)['code'].tolist()
-    result = alpha_of_funds.sort_values("p_values", ascending=False)
+    result = alpha_of_funds.sort_values("confidence", ascending=False)
     sort_by_p = []
     for _, row in result.iterrows():
         if row['confidence'] > params['alpha_confidence'] and row['alpha_values'] > params['alpha_threshold']:
