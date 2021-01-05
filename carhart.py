@@ -35,7 +35,7 @@ class Carhart:
     def get_start_indices(lst, window):
         start_indices = []
         start_index = 0
-        while start_index + 252 < len(lst):
+        while start_index + 252 <= len(lst):
             start_indices.append(start_index)
             start_index += window
         return start_indices

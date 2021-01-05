@@ -68,33 +68,42 @@ def build_result_dataframe(data, fund_type, filter_bad_fund=True):
     return df
 
 
-def train_validate(data, codes, built_dataframe):
+def train_validate(data, codes):
     alpha_of_funds = calculate_alpha(data, codes)
-    sort_by_sharp = built_dataframe.sort_values("annual_sharp_ratios", ascending=False)['code'].tolist()
     result = alpha_of_funds.sort_values("confidence", ascending=False)
     sort_by_p = []
     for _, row in result.iterrows():
         if row['confidence'] > params['alpha_confidence'] and row['alpha_values'] > params['alpha_threshold']:
-            sort_by_p.append(row['codes'])
-    print(len(sort_by_p), sort_by_p)
-    b = utils.find_common_in_lists(sort_by_p, sort_by_sharp, range1=len(sort_by_p), range2=50)
-    print(len(b), b)
+            if row['sharp_validation'] > 1 and row['return_rate_validation'] > 0.1:
+                sort_by_p.append(row['codes'])
+            else:
+                logging.info("{} has bad performance in 2020, sharp: {}, return_rate: {}".format(row['codes'], row[
+                    'sharp_validation'], row['return_rate_validation']))
+    logging.info("alpha sorted by confidence: ", sort_by_p)
 
 
 def calculate_alpha(data, codes):
     alpha_values = []
     p_values = []
     selected = []
+    return_rate_validation = []
+    mdd_validation = []
+    sharp_validation = []
     monthly_trade_days = 22
     for code in codes:
         alpha = []
         dates = data[code]['net_value_date'][:]
         adj_nav = data[code]['net_value'][:]
-        split_index = dates.index(params['calculate_alpha_until'])
-        adj_nav = adj_nav[split_index:]  # dates are reversed before effective_net_values
-        dates = dates[split_index:]
-        net_values, dates = algorithms.effective_net_values(adj_nav, dates, code)
-        df_net_values = pd.DataFrame({'net_value': net_values, 'trade_date': dates})
+        if params['calculate_alpha_until'] in dates:
+            split_index = dates.index(params['calculate_alpha_until'])
+        else:
+            continue
+        adj_nav_train, adj_nav_validate = adj_nav[split_index:], adj_nav[
+                                                                 :split_index]  # dates are reversed before effective_net_values
+        dates_train, dates_validate = dates[split_index:], dates[:split_index]
+        net_values_train, dates_train = algorithms.effective_net_values(adj_nav_train, dates_train, code)
+
+        df_net_values = pd.DataFrame({'net_value': net_values_train, 'trade_date': dates_train})
         df_factor = pd.read_csv(r'./factor.csv')
         df_factor['trade_date'].tolist()
         df_factor['trade_date'] = df_factor['trade_date'].apply(str)
@@ -102,6 +111,7 @@ def calculate_alpha(data, codes):
         df['return'] = np.log(df['net_value']).diff(monthly_trade_days)
         df = df.dropna()
         monthly_return = df['return'].values.tolist()
+        if len(monthly_return) < 252: continue
         mom = algorithms.normalization(df['mom_factor'].values.tolist())
         mkt = algorithms.normalization(df['mkt_factor'].values.tolist())
         smb = algorithms.normalization(df['smb_factor'].values.tolist())
@@ -119,24 +129,31 @@ def calculate_alpha(data, codes):
                 alpha_values.append(0)
             p_values.append(qualified_alpha / len(carhart1.models))
             selected.append(code)
-    data_dict = {"codes": selected, "alpha_values": alpha_values, "confidence": p_values}
+
+            adj_nav_validate, dates_validate = algorithms.effective_net_values(adj_nav_validate, dates_validate, code)
+            return_rate_validation.append(algorithms.annual_return(adj_nav_validate))
+            sharp_validation.append(algorithms.sharp_ratio(adj_nav_validate))
+            mdd_validation.append(algorithms.max_draw_down(adj_nav_validate, len(adj_nav_validate)))
+    data_dict = {"codes": selected, "alpha_values": alpha_values, "confidence": p_values,
+                 "sharp_validation": sharp_validation, "mdd_validation": mdd_validation,
+                 "return_rate_validation": return_rate_validation}
     df = pd.DataFrame(data=data_dict, columns=data_dict.keys())
     return df
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--load_data', default='20201231')
+    parser.add_argument('--load_data', default='20210105')
     args = parser.parse_args()
     # type_list = ["股票型", "混合型", "债券型", "货币市场型"]
-    if args.load_data != "20201231":
-        data = build_dataset.Fund(700).fund_info
+    if args.load_data != "20210105":
+        data = build_dataset.Fund(504).fund_info
     else:
         with open(args.load_data + ".pkl", 'rb') as pkl:
             data = pickle.load(pkl)
     df = build_result_dataframe(data, fund_type="股票型", filter_bad_fund=False)
     codes = df['code'].tolist()
-    train_validate(data, codes, df)
+    train_validate(data, codes)
 
 
 if __name__ == '__main__':
